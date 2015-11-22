@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/Gyroscope">
+        <file>res/AH.jpg</file>
+        <file>res/AH1.png</file>
+        <file>res/FixedHorizonTrans.png</file>
+        <file>res/Dial.png</file>
+        <file>res/pitch.gif</file>
+        <file>res/roll.gif</file>
+        <file>res/yaw.gif</file>
+        <file>res/default.svg</file>
+        <file>res/v-slider-handle.svg</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,13 @@
+.
+3DWidget
+3rdparty/glext
+3rdparty/lib3ds
+3rdparty/quazip
+3rdparty/zlib
+geometry
+glu
+io
+maths
+sceneGraph
+shading
+viewport

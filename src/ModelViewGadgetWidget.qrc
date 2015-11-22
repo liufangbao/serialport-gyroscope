@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/ModelView">
+        <file>res/warning_sign.obj</file>
+        <file>res/warning_sign.mtl</file>
+        <file>res/3D_Model/planes/firecracker/firecracker.3ds</file>
+        <file>res/3D_Model/planes/firecracker/firecracker.jpg</file>
+        <file>res/3D_Model/planes/firecracker/texture.jpg</file>
+        <file>res/black.jpg</file>
+        <file>res/3D_Model/planes/firecracker/TEXTURE.JPG</file>
+    </qresource>
+</RCC>
