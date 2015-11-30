@@ -54,6 +54,9 @@
 #include <QKeyEvent>
 #include<QLabel>
 #include "modelviewgadgetwidget.h"
+#include "attitudelabel.h"
+#include"videoclient.h"
+
 class EmbeddedSvgViewer : public QWidget
 {
     Q_OBJECT
@@ -68,6 +71,7 @@ signals:
 public slots:
     void setZoom(int); // 100 <= newZoom < 0
     void serialPortHandler(QByteArray);
+    void showVideoView(QString);
 private:
     QSvgRenderer* m_renderer;
     QSlider* m_zoomSlider;
@@ -90,12 +94,14 @@ private:
      QPainter AH_Painter,Dial_Painter,FixedHorizonTrans_Painter;
       AttitudeStateDataPacked mAttitudeState;
 
-      QTimer *mTimer;
-     QLabel *mPitchLabel,*mRollLabel,*mYawLabel;
-     QLabel *mPitchLabelValue,*mRollLabelValue,*mYawLabelValue;
-     QMovie*mPitchMovie,*mRollMovie,*mYawMovie;
+      QTimer *mTimer,*quitButtonTimer;
+     AttitudeLabel *mPitchLabel,*mRollLabel,*mYawLabel;
+     AttitudeLabel *mPitchLabelValue,*mRollLabelValue,*mYawLabelValue;
+     QLabel *videoView;
+     VideoClient *vc;
+#if 0
      ModelViewGadgetWidget *mModelViewGadgetWidget;
-
+#endif
 
     void updateImageScale();
     QRectF getViewBox(QPointF viewBoxCenter);

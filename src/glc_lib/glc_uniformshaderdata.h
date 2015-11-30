@@ -49,7 +49,7 @@ public:
 
 	//! Set lighting enbale state
 	void setLightingState(bool enable);
-
+    void setLightingState(QStack<bool> *enable);
 	//! Set the model view matrix
 	void setModelViewProjectionMatrix(const GLC_Matrix4x4& modelView, const GLC_Matrix4x4& projection);
 

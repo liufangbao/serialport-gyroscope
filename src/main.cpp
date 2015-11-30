@@ -5,6 +5,7 @@
 #include <QDesktopWidget>
 #include <QRect>
 #include "serialportmanager.h"
+
 void printscreeninfo()
 {
     QDesktopWidget *dwsktopwidget = QApplication::desktop();
@@ -22,13 +23,14 @@ void printscreeninfo()
 
 int main(int argc, char** argv)
 {
+
     QApplication::addLibraryPath("./plugins");
     QApplication app(argc, argv);
     Q_INIT_RESOURCE(embeddedsvgviewer);
 
     QString filePath;
 
-    printscreeninfo();
+   // printscreeninfo();
 
     QDir dir;
     QString pathname;
@@ -43,11 +45,10 @@ int main(int argc, char** argv)
         return -1;
     }
 
-   // SerialPortManager serialportManager(new QString("/dev/ttySAC2")); //for ok6410
-    SerialPortManager serialportManager(new QString("/dev/ttyUSB0")); //for PC-ubuntu
+    SerialPortManager serialportManager(new QString("/dev/ttySAC2")); //for ok6410
+ //   SerialPortManager serialportManager(new QString("/dev/ttyUSB0")); //for PC-ubuntu
     EmbeddedSvgViewer viewer(filePath);
     viewer.connect(&serialportManager,SIGNAL(dataReady(QByteArray)),&viewer,SLOT(serialPortHandler(QByteArray)));
-
     viewer.showFullScreen();
 #ifdef QT_KEYPAD_NAVIGATION
     QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);

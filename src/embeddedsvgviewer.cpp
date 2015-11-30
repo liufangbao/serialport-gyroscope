@@ -51,14 +51,14 @@
 #include <QDesktopWidget>
 #include <QPoint>
 #include <QDir>
-#include<QLabel>
-#include<QMovie>
+
 EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),Dial_Painter(this),FixedHorizonTrans_Painter(this)
 {
-    qApp->setStyleSheet(" QSlider:vertical { width: 50px; } \
-                          QSlider::groove:vertical { border: 1px solid black; border-radius: 3px; width: 6px; } \
+/*    qApp->setStyleSheet(" QSlider:vertical { width: 50px; } \
+                         QSlider::groove:vertical { border: 1px solid black; border-radius: 3px; width: 6px; } \
                           QSlider::handle:vertical { height: 25px; margin: 0 -22px; image: url('://res/v-slider-handle.svg'); } \
                        ");
+*/
       QDesktopWidget *dwsktopwidget = QApplication::desktop();
      QRect deskrect = dwsktopwidget->availableGeometry();    //desktop size
      QRect screenrect = dwsktopwidget->screenGeometry();   //screen size
@@ -104,11 +104,9 @@ EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),D
         AH=AH.scaledToWidth(gyroscopeAreaSize.width());
         qDebug()<<"AH size:"<<AH.width()<<AH.height();
 
-      //  FixedHorizonTrans=FixedHorizonTrans.scaledToWidth(screenrect.height()).scaledToHeight(screenrect.height());
         FixedHorizonTrans=FixedHorizonTrans.scaled(gyroscopeAreaSize);
         qDebug()<<"FixedHorizonTrans size:"<<FixedHorizonTrans.width()<<FixedHorizonTrans.height();
 
-        //Dial=Dial.scaledToWidth(screenrect.height()).scaledToHeight(screenrect.height());
         Dial=Dial.scaled(gyroscopeAreaSize);
         qDebug()<<"Dial size:"<<Dial.width()<<Dial.height();
 
@@ -117,84 +115,61 @@ EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),D
         connect(mTimer, SIGNAL(timeout()),SLOT(update()));
         mTimer->start();
 
+
         QSize labelSize(    screenrect.width()/12,screenrect.width()/12);
         QRect pitchRect(0,screenrect.width()/2,
+                screenrect.width()/12,screenrect.height()-screenrect.width()/2);
+        QRect pitchValueRect(screenrect.width()/12,screenrect.width()/2,
                         screenrect.width()/12,screenrect.height()-screenrect.width()/2);
-         mPitchLabel = new QLabel("pitchlabel",this);
-         mPitchLabel->setAutoFillBackground(true);
-         mPitchLabel->setGeometry(pitchRect);
-         mPitchLabel->setPixmap(AH);
-         QPalette pe1;
-         pe1.setColor(QPalette::WindowText,Qt::green);
-         mPitchLabel->setPalette(pe1);
-         mPitchLabel->setText("Pitch");
+       QPalette pe1;
+                pe1.setColor(QPalette::WindowText,Qt::red);
+        mPitchLabel = new AttitudeLabel("Pitch",this,pitchRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe1,true,":/Gyroscope/res/pitch.gif",labelSize,true);
+         mPitchLabelValue = new AttitudeLabel("0",this,pitchValueRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe1,true,NULL,labelSize,false);
 
-         mPitchMovie=new QMovie(":/Gyroscope/res/pitch.gif");
-         mPitchMovie->setScaledSize(labelSize);
-         mPitchLabel->setMovie(mPitchMovie);
-         mPitchMovie->start();
-
-         QRect pitchValueRect(screenrect.width()/12,screenrect.width()/2,
-                         screenrect.width()/12,screenrect.height()-screenrect.width()/2);
-         mPitchLabelValue = new QLabel("pitchlabelvalue",this);
-         mPitchLabelValue->setGeometry(pitchValueRect);
-         mPitchLabelValue->setStyleSheet(QString::fromUtf8("font: 15pt \"Sans Serif\";"));
 
         QRect rollRect(screenrect.width()/6,screenrect.width()/2,
                      screenrect.width()/12,screenrect.height()-screenrect.width()/2);
         QRect rollValueRect(screenrect.width()/6+screenrect.width()/12,screenrect.width()/2,
                      screenrect.width()/12,screenrect.height()-screenrect.width()/2);
-         mRollLabel = new QLabel("rolllabel",this);
-         mRollLabelValue = new QLabel("rolllabelvalue",this);
-         mRollLabel->setAutoFillBackground(true);
-         mRollLabel->setGeometry(rollRect);
-         mRollLabelValue->setGeometry(rollValueRect);
-         mRollLabelValue->setStyleSheet(QString::fromUtf8("font: 15pt \"Sans Serif\";"));
-         mRollLabel->setPixmap(FixedHorizonTrans);
-         QPalette pe2;
-         pe2.setColor(QPalette::WindowText,Qt::green);
-         mRollLabel->setPalette(pe2);
-         mRollLabel->setText("Roll");
-         mRollMovie=new QMovie(":/Gyroscope/res/roll.gif");
-         mRollLabel->setMovie(mRollMovie);
-         mRollMovie->setScaledSize(labelSize);
-         mRollMovie->start();
+        QPalette pe2;
+        pe2.setColor(QPalette::WindowText,Qt::green);
+        mRollLabel = new AttitudeLabel("Roll",this,rollRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe2,true,":/Gyroscope/res/roll.gif",labelSize,true);
+         mRollLabelValue = new AttitudeLabel("0",this,rollValueRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe2,true,NULL,labelSize,false);
 
         QRect yawRect(screenrect.width()/3,screenrect.width()/2,
                       screenrect.width()/12,screenrect.height()-screenrect.width()/2);
         QRect yawRectValue(screenrect.width()/3+screenrect.width()/12,screenrect.width()/2,
                       screenrect.width()/12,screenrect.height()-screenrect.width()/2);
-         mYawLabel = new QLabel("yawlabel",this);
-         mYawLabelValue = new QLabel("yawlabelvalue",this);
-        mYawLabel->setAutoFillBackground(true);
-        mYawLabel->setGeometry(yawRect);
-         mYawLabelValue->setStyleSheet(QString::fromUtf8("font: 15pt \"Sans Serif\";"));
-        mYawLabelValue->setGeometry(yawRectValue);
-        mYawLabel->setPixmap(Dial);
         QPalette pe3;
         pe3.setColor(QPalette::WindowText,Qt::blue);
-        mYawLabel->setPalette(pe3);
-        mYawLabel->setText("Yaw");
-        mYawMovie=new QMovie(":/Gyroscope/res/yaw.gif");
-        mYawLabel->setMovie(mYawMovie);
-        mYawMovie->setScaledSize(labelSize);
-        mYawMovie->start();
+        mYawLabel = new AttitudeLabel("Yaw",this,yawRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3,true,":/Gyroscope/res/yaw.gif",labelSize,true);
+         mYawLabelValue = new AttitudeLabel("0",this,yawRectValue,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3,true,NULL,labelSize,false);
 
        m_quitButton = new QPushButton("Quit", this);
         QRect quitButtonRect(mScreencenter.x()+FixedHorizonTrans.width()/2,
                                                   3*mScreencenter.y()/2,
                                                   mScreencenter.x()-FixedHorizonTrans.width()/2,
                                                   mScreencenter.y()/2);
-      // m_quitButton->setGeometry(quitButtonRect);
        connect(m_quitButton, SIGNAL(pressed()), QApplication::instance(), SLOT(quit()));
-
-       mModelViewGadgetWidget = new ModelViewGadgetWidget(this);
+       quitButtonTimer = new QTimer();
+       quitButtonTimer->setInterval(2000);
+       connect(quitButtonTimer, SIGNAL(timeout()),m_quitButton,SLOT(hide()));
+       quitButtonTimer->start();
+#if 0
        QRect ModelViewRect(screenrect.width()/2,0,
                                                 screenrect.width()/2,screenrect.width()/2);
+       mModelViewGadgetWidget = new ModelViewGadgetWidget(this);
        mModelViewGadgetWidget->setGeometry(ModelViewRect);
 
-   //    mModelViewGadgetWidget->reloadScene();
+       mModelViewGadgetWidget->reloadScene();
        connect(this, SIGNAL(updateModelView(QByteArray)), mModelViewGadgetWidget, SLOT(serialPortHandler(QByteArray)));
+#endif
+       QRect VideoViewRect(screenrect.width()/2,0,
+                                                screenrect.width()/2,screenrect.width()/2);
+       videoView =new QLabel;
+       videoView->setGeometry(VideoViewRect);
+        vc = new VideoClient;
+        connect(vc,SIGNAL(videoReady(QString)),this,SLOT(showVideoView(QString)));
 }
 
 void EmbeddedSvgViewer::paintEvent(QPaintEvent *event)
@@ -213,7 +188,6 @@ void EmbeddedSvgViewer::paintEvent(QPaintEvent *event)
      mRollLabelValue->setText(QString("%1").arg(mAttitudeState.Roll));
      mYawLabelValue->setText(QString("%1").arg(mAttitudeState.Yaw));
 
-  //  painter.translate(mScreencenter);
     painter.translate(FixedHorizonTrans.width()/2,FixedHorizonTrans.height()/2);
 
      painter.rotate(-roll);
@@ -234,13 +208,16 @@ void EmbeddedSvgViewer::paintEvent(QPaintEvent *event)
 
     painter.rotate(yaw);
     painter.drawPixmap(-Dial.width()/2,-Dial.height()/2,Dial.width(),Dial.height(),Dial);
-
-
 }
 
 
 void EmbeddedSvgViewer::mouseMoveEvent ( QMouseEvent * event )
 {
+    if(m_quitButton->isHidden())
+    {
+        m_quitButton->show();
+    }
+
     int incX = int((event->globalX() - m_mousePress.x()) * m_imageScale);
     int incY = int((event->globalY() - m_mousePress.y()) * m_imageScale);
 
@@ -274,6 +251,10 @@ void EmbeddedSvgViewer::mouseMoveEvent ( QMouseEvent * event )
 
 void EmbeddedSvgViewer::mousePressEvent ( QMouseEvent * event )
 {
+    if(m_quitButton->isHidden())
+    {
+        m_quitButton->show();
+    }
     m_viewBoxCenterOnMousePress = m_viewBoxCenter;
     m_mousePress = event->globalPos();
 }
@@ -393,6 +374,11 @@ void EmbeddedSvgViewer::serialPortHandler(QByteArray array)
     }
 
  //   qDebug()<<"q1:"<<mAttitudeState.q1<<"q2:"<<mAttitudeState.q2<<"q3:"<<mAttitudeState.q3<<"q4:"<<mAttitudeState.q4<<endl;
-  //  qDebug()<<"pitch:"<<mAttitudeState.Pitch<<"roll:"<<mAttitudeState.Roll<<"yaw:"<<mAttitudeState.Yaw<<endl;
+    //  qDebug()<<"pitch:"<<mAttitudeState.Pitch<<"roll:"<<mAttitudeState.Roll<<"yaw:"<<mAttitudeState.Yaw<<endl;
+}
+
+void EmbeddedSvgViewer::showVideoView(QString s)
+{
+    videoView->setText(s);
 }
 

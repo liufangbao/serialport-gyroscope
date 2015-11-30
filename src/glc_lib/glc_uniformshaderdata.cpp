@@ -53,6 +53,12 @@ void GLC_UniformShaderData::setLightingState(bool enable)
 	pCurrentShader->programShaderHandle()->setUniformValue(pCurrentShader->enableLightingId(), enable);
 }
 
+void GLC_UniformShaderData::setLightingState(QStack<bool> *enable)
+{
+    GLC_Shader* pCurrentShader= GLC_Shader::currentShaderHandle();
+    pCurrentShader->programShaderHandle()->setUniformValue(pCurrentShader->enableLightingId(), enable->top());
+}
+
 void GLC_UniformShaderData::setModelViewProjectionMatrix(const GLC_Matrix4x4& modelView, const GLC_Matrix4x4& projection)
 {
 	// Set model view matrix

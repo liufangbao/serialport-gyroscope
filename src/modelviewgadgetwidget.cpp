@@ -1,5 +1,5 @@
 #include "modelviewgadgetwidget.h"
-
+#if 0
 /**
  ******************************************************************************
  *
@@ -366,3 +366,4 @@ void ModelViewGadgetWidget::updateAttitude()
     rootObject->updateChildrenAbsoluteMatrix();
     updateGL();
 }
+#endif

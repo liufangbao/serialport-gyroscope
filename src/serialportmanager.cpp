@@ -20,7 +20,7 @@ SerialPortManager::SerialPortManager(QString *portName)
     iproc->type = 0x0;
 
     mTimer = new QTimer();
-    mTimer->setInterval(40);
+    mTimer->setInterval(50);
 
      mSettings = {BAUD115200, DATA_8, PAR_NONE, STOP_1, FLOW_OFF, 10};
      mPort = new QextSerialPort(mSettings, QextSerialPort::Polling);
@@ -307,7 +307,7 @@ void SerialPortManager::onReadyRead()
             mReceivedString.clear();
             QByteArray array;
             array = mPort->readAll();
-
+           // qDebug()<<"bytesAvailable count:"<<array.size()<<endl;
             //pick useful packet
             int idx=0;
             for(idx=0;idx<array.size();idx++)

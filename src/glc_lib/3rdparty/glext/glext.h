@@ -1,6 +1,8 @@
 #ifndef __glext_h_
 #define __glext_h_
 
+#include "../glc_global.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -3853,8 +3855,8 @@ typedef char GLchar;			/* native character */
 
 #ifndef GL_VERSION_1_5
 /* GL types for handling large vertex buffer objects */
-typedef ptrdiff_t GLintptr;
-typedef ptrdiff_t GLsizeiptr;
+//typedef ptrdiff_t GLintptr;
+//typedef ptrdiff_t GLsizeiptr;
 #endif
 
 #ifndef GL_ARB_vertex_buffer_object

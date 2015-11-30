@@ -214,7 +214,7 @@ void GLC_Context::glcEnableLighting(bool enable)
 
 #ifdef GLC_OPENGL_ES_2
 
-		m_UniformShaderData.setLightingState(m_LightingIsEnable);
+        m_UniformShaderData.setLightingState(&m_LightingIsEnable);
 #else
 		if (GLC_Shader::hasActiveShader())
 		{
