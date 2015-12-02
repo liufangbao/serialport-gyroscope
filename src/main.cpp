@@ -5,6 +5,7 @@
 #include <QDesktopWidget>
 #include <QRect>
 #include "serialportmanager.h"
+#include "config.h"
 
 void printscreeninfo()
 {
@@ -12,11 +13,9 @@ void printscreeninfo()
     QRect deskrect = dwsktopwidget->availableGeometry();
     QRect screenrect = dwsktopwidget->screenGeometry();
     int scrcount = dwsktopwidget->screenCount();
-    qCritical("screenrect.w==%s\n",qPrintable(QString::number(screenrect.width())));
-    qCritical("screenrect.h==%s\n",qPrintable(QString::number(screenrect.height())));
-    qCritical("deskrect.w==%s\n",qPrintable(QString::number(deskrect.width())));
-    qCritical("deskrect.h==%s\n",qPrintable(QString::number(deskrect.height())));
-    qCritical("scrcount==%s\n",qPrintable(QString::number(scrcount)));
+    qCritical("screenrect.w==%s screenrect.h==%s\n",qPrintable(QString::number(screenrect.width())),qPrintable(QString::number(screenrect.height())));
+    qCritical("deskrect.w==%s deskrect.h==%s\n",qPrintable(QString::number(deskrect.width())),qPrintable(QString::number(deskrect.height())));
+    qCritical("screen count==%s\n",qPrintable(QString::number(scrcount)));
 
 }
 
@@ -30,7 +29,7 @@ int main(int argc, char** argv)
 
     QString filePath;
 
-   // printscreeninfo();
+    printscreeninfo();
 
     QDir dir;
     QString pathname;
@@ -46,9 +45,9 @@ int main(int argc, char** argv)
     }
 
     SerialPortManager serialportManager(new QString("/dev/ttySAC2")); //for ok6410
- //   SerialPortManager serialportManager(new QString("/dev/ttyUSB0")); //for PC-ubuntu
+   // SerialPortManager serialportManager(new QString("/dev/ttyUSB0")); //for PC-ubuntu
     EmbeddedSvgViewer viewer(filePath);
-    viewer.connect(&serialportManager,SIGNAL(dataReady(QByteArray)),&viewer,SLOT(serialPortHandler(QByteArray)));
+    viewer.connect(&serialportManager,SIGNAL(dataReady(uint32_t,QByteArray)),&viewer,SLOT(serialPortHandler(uint32_t,QByteArray)));
     viewer.showFullScreen();
 #ifdef QT_KEYPAD_NAVIGATION
     QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);

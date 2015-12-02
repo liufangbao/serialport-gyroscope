@@ -61,7 +61,6 @@
 #include <QtOpenGL>
 
 #include "../glc_config.h"
-#include "../glc_gl.h"
 namespace glc
 {
 	GLC_LIB_EXPORT void gluLookAt (GLdouble eyeX, GLdouble eyeY, GLdouble eyeZ, GLdouble centerX, GLdouble centerY, GLdouble centerZ, GLdouble upX, GLdouble upY, GLdouble upZ);

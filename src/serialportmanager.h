@@ -83,7 +83,7 @@ public:
     uint8_t PIOS_CRC_updateByte(uint8_t crc, const uint8_t data);
     UAVTalkRxState UAVTalkProcessInputStreamQuiet(uint8_t rxbyte);
 signals:
-    void dataReady(QByteArray s);
+    void dataReady(uint32_t objId,QByteArray s);
 public slots:
     void onReadyRead();
 

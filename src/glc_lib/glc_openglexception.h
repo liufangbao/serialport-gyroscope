@@ -25,7 +25,6 @@
 #ifndef GLC_OPENGLEXCEPTION_H_
 #define GLC_OPENGLEXCEPTION_H_
 
-#include "glc_gl.h"
 #include "glc_exception.h"
 
 #include <QtOpenGL>

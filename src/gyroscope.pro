@@ -6,9 +6,8 @@
 
 QT       += core gui
 QT += svg
-#QT += opengl
 QT           += network widget
-
+#QT += opengl
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = gyroscope
@@ -23,10 +22,11 @@ SOURCES += main.cpp\
     execdialog.cpp \
     embeddedsvgviewer.cpp \
     serialportmanager.cpp \
-    uavobjhandle.cpp \
     modelviewgadgetwidget.cpp \
     attitudelabel.cpp \
-    videoclient.cpp
+    videoclient.cpp \
+    gcstelemetrystatslabel.cpp \
+    UAVObjGyroscopeHandler.cpp
 
 HEADERS  += mainwindow.h \
     qled.h \
@@ -34,10 +34,12 @@ HEADERS  += mainwindow.h \
     execdialog.h \
     embeddedsvgviewer.h \
     serialportmanager.h \
-    uavobjhandle.h \
     modelviewgadgetwidget.h \
     attitudelabel.h \
-    videoclient.h
+    videoclient.h \
+    config.h \
+    gcstelemetrystatslabel.h \
+    UAVObjGyroscopeHandler.h
 
 FORMS    += mainwindow.ui \
     setupdialog.ui \

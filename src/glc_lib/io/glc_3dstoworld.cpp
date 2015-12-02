@@ -122,7 +122,7 @@ GLC_World* GLC_3dsToWorld::CreateWorldFrom3ds(QFile &file)
 	// Create GLC_3DViewInstance with Node
 	for (Lib3dsNode *pNode=m_pLib3dsFile->nodes; pNode!=0; pNode=pNode->next)
 	{
-		createMeshes(m_pWorld->rootOccurence(), pNode);
+        createMeshes(m_pWorld->rootOccurence(), pNode);
 	}
 
 	// Load unloaded mesh name

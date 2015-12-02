@@ -50,13 +50,14 @@
 #include <QSlider>
 #include <QPushButton>
 #include <QPainter>
-#include"uavobjhandle.h"
+#include"UAVObjGyroscopeHandler.h"
 #include <QKeyEvent>
 #include<QLabel>
 #include "modelviewgadgetwidget.h"
 #include "attitudelabel.h"
 #include"videoclient.h"
-
+#include"config.h"
+#include"gcstelemetrystatslabel.h"
 class EmbeddedSvgViewer : public QWidget
 {
     Q_OBJECT
@@ -70,7 +71,7 @@ signals:
     void updateModelView(QByteArray);
 public slots:
     void setZoom(int); // 100 <= newZoom < 0
-    void serialPortHandler(QByteArray);
+    void serialPortHandler(uint32_t,QByteArray);
     void showVideoView(QString);
 private:
     QSvgRenderer* m_renderer;
@@ -92,16 +93,21 @@ private:
      QPixmap AH,Dial,FixedHorizonTrans;
      qreal AH_X,AH_Y,FixedHorizonTrans_X,FixedHorizonTrans_Y,Dial_X,Dial_Y;
      QPainter AH_Painter,Dial_Painter,FixedHorizonTrans_Painter;
+
       AttitudeStateDataPacked mAttitudeState;
+        GCSTelemetryStatsDataPacked mGCSTelemetryStats;
+        SystemStatsDataPacked mSystemStats;
 
       QTimer *mTimer,*quitButtonTimer;
      AttitudeLabel *mPitchLabel,*mRollLabel,*mYawLabel;
      AttitudeLabel *mPitchLabelValue,*mRollLabelValue,*mYawLabelValue;
      QLabel *videoView;
      VideoClient *vc;
-#if 0
+#if USE_GLC_LIB
      ModelViewGadgetWidget *mModelViewGadgetWidget;
 #endif
+    GCSTelemetryStatsLabel *mTxGCSTelemetryStatsLabel,*mRxGCSTelemetryStatsLabel;
+
 
     void updateImageScale();
     QRectF getViewBox(QPointF viewBoxCenter);

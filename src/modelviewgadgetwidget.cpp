@@ -1,5 +1,5 @@
 #include "modelviewgadgetwidget.h"
-#if 0
+
 /**
  ******************************************************************************
  *
@@ -33,6 +33,9 @@
     #include "OpenGL/OpenGL.h"
 #endif
 #include "modelviewgadgetwidget.h"
+
+#if USE_GLC_LIB
+
 #include "./glc_lib/glc_context.h"
 #include "./glc_lib/glc_exception.h"
 #include "./glc_lib/glc_openglexception.h"
@@ -56,7 +59,7 @@ ModelViewGadgetWidget::ModelViewGadgetWidget(QWidget *parent)
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
     m_Light.setPosition(4000.0, 40000.0, 80000.0);
-     m_GlView.setBackgroundColor(Qt::white);
+     m_GlView.setBackgroundColor(Qt::black);
     m_Light.setAmbientColor(Qt::lightGray);
 
     m_GlView.cameraHandle()->setDefaultUpVector(glc::Z_AXIS);

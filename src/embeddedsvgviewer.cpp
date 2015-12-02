@@ -102,13 +102,13 @@ EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),D
          rotateMatrix.rotate(-90);
         AH=AH.transformed(rotateMatrix);
         AH=AH.scaledToWidth(gyroscopeAreaSize.width());
-        qDebug()<<"AH size:"<<AH.width()<<AH.height();
+     //   qDebug()<<"AH size:"<<AH.width()<<AH.height();
 
         FixedHorizonTrans=FixedHorizonTrans.scaled(gyroscopeAreaSize);
-        qDebug()<<"FixedHorizonTrans size:"<<FixedHorizonTrans.width()<<FixedHorizonTrans.height();
+    //    qDebug()<<"FixedHorizonTrans size:"<<FixedHorizonTrans.width()<<FixedHorizonTrans.height();
 
         Dial=Dial.scaled(gyroscopeAreaSize);
-        qDebug()<<"Dial size:"<<Dial.width()<<Dial.height();
+    //    qDebug()<<"Dial size:"<<Dial.width()<<Dial.height();
 
         mTimer = new QTimer();
         mTimer->setInterval(40);
@@ -123,7 +123,7 @@ EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),D
                         screenrect.width()/12,screenrect.height()-screenrect.width()/2);
        QPalette pe1;
                 pe1.setColor(QPalette::WindowText,Qt::red);
-        mPitchLabel = new AttitudeLabel("Pitch",this,pitchRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe1,true,":/Gyroscope/res/pitch.gif",labelSize,true);
+        mPitchLabel = new AttitudeLabel("Pitch",this,pitchRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe1,true,":/Gyroscope/res/pitch.gif",labelSize,false);
          mPitchLabelValue = new AttitudeLabel("0",this,pitchValueRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe1,true,NULL,labelSize,false);
 
 
@@ -133,7 +133,7 @@ EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),D
                      screenrect.width()/12,screenrect.height()-screenrect.width()/2);
         QPalette pe2;
         pe2.setColor(QPalette::WindowText,Qt::green);
-        mRollLabel = new AttitudeLabel("Roll",this,rollRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe2,true,":/Gyroscope/res/roll.gif",labelSize,true);
+        mRollLabel = new AttitudeLabel("Roll",this,rollRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe2,true,":/Gyroscope/res/roll.gif",labelSize,false);
          mRollLabelValue = new AttitudeLabel("0",this,rollValueRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe2,true,NULL,labelSize,false);
 
         QRect yawRect(screenrect.width()/3,screenrect.width()/2,
@@ -142,7 +142,7 @@ EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),D
                       screenrect.width()/12,screenrect.height()-screenrect.width()/2);
         QPalette pe3;
         pe3.setColor(QPalette::WindowText,Qt::blue);
-        mYawLabel = new AttitudeLabel("Yaw",this,yawRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3,true,":/Gyroscope/res/yaw.gif",labelSize,true);
+        mYawLabel = new AttitudeLabel("Yaw",this,yawRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3,true,":/Gyroscope/res/yaw.gif",labelSize,false);
          mYawLabelValue = new AttitudeLabel("0",this,yawRectValue,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3,true,NULL,labelSize,false);
 
        m_quitButton = new QPushButton("Quit", this);
@@ -155,7 +155,7 @@ EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),D
        quitButtonTimer->setInterval(2000);
        connect(quitButtonTimer, SIGNAL(timeout()),m_quitButton,SLOT(hide()));
        quitButtonTimer->start();
-#if 0
+#if USE_GLC_LIB
        QRect ModelViewRect(screenrect.width()/2,0,
                                                 screenrect.width()/2,screenrect.width()/2);
        mModelViewGadgetWidget = new ModelViewGadgetWidget(this);
@@ -164,6 +164,16 @@ EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),D
        mModelViewGadgetWidget->reloadScene();
        connect(this, SIGNAL(updateModelView(QByteArray)), mModelViewGadgetWidget, SLOT(serialPortHandler(QByteArray)));
 #endif
+
+       QRect TxStatsViewRect(screenrect.width()/2,0,
+                                                screenrect.width()/8,screenrect.width()/2);
+       mTxGCSTelemetryStatsLabel = new GCSTelemetryStatsLabel("Tx",this,TxStatsViewRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3);
+       QRect RxStatsViewRect(screenrect.width()-screenrect.width()/8,0,
+                                                screenrect.width()/8,screenrect.width()/2);
+       mRxGCSTelemetryStatsLabel = new GCSTelemetryStatsLabel("Rx",this,RxStatsViewRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3);
+
+
+
        QRect VideoViewRect(screenrect.width()/2,0,
                                                 screenrect.width()/2,screenrect.width()/2);
        videoView =new QLabel;
@@ -347,34 +357,49 @@ void EmbeddedSvgViewer::setZoom(int newZoom)
 /*
 recognise packet and fetch data from it
 */
-void EmbeddedSvgViewer::serialPortHandler(QByteArray array)
+void EmbeddedSvgViewer::serialPortHandler(uint32_t objId,QByteArray array)
 {
-    float q0,q1,q2,q3,Pitch,Roll,Yaw;
- //   mModelViewGadgetWidget->serialPortHandler(array);
-    memcpy(&mAttitudeState,array,sizeof(AttitudeStateDataPacked));
-    mPitchLabelValue->setText(QString("%1").arg(mAttitudeState.Pitch));
-    mRollLabelValue->setText(QString("%1").arg(mAttitudeState.Roll));
-    mYawLabelValue->setText(QString("%1").arg(mAttitudeState.Yaw));
 
-    updateModelView(array);
 
-     q0=mAttitudeState.q1;
-     q1=mAttitudeState.q2;
-     q2=mAttitudeState.q3;
-     q3=mAttitudeState.q4;
-     Pitch=mAttitudeState.Pitch;
-     Roll=mAttitudeState.Roll;
-     Yaw=mAttitudeState.Yaw;
-
-    if((abs(Pitch - asin(-2 * q1 * q3 + 2 * q0* q2)* 57.3)<10e-3) // pitch
-    &&(abs(Roll - atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2* q2 + 1)* 57.3)<10e-3) // roll
-    &&(abs(Yaw - atan2(2*(q1*q2 + q0*q3),q0*q0+q1*q1-q2*q2-q3*q3) * 57.3)<10e-3))		//yaw
+    switch(objId)
     {
-        update();
-    }
+        case ATTITUDESTATE_OBJID:
+                memcpy(&mAttitudeState,array,sizeof(AttitudeStateDataPacked));
+                mPitchLabelValue->setText(QString("%1").arg(mAttitudeState.Pitch));
+                mRollLabelValue->setText(QString("%1").arg(mAttitudeState.Roll));
+                mYawLabelValue->setText(QString("%1").arg(mAttitudeState.Yaw));
 
- //   qDebug()<<"q1:"<<mAttitudeState.q1<<"q2:"<<mAttitudeState.q2<<"q3:"<<mAttitudeState.q3<<"q4:"<<mAttitudeState.q4<<endl;
-    //  qDebug()<<"pitch:"<<mAttitudeState.Pitch<<"roll:"<<mAttitudeState.Roll<<"yaw:"<<mAttitudeState.Yaw<<endl;
+                float q0,q1,q2,q3,Pitch,Roll,Yaw;
+                q0=mAttitudeState.q1;
+                q1=mAttitudeState.q2;
+                q2=mAttitudeState.q3;
+                q3=mAttitudeState.q4;
+                Pitch=mAttitudeState.Pitch;
+                Roll=mAttitudeState.Roll;
+                Yaw=mAttitudeState.Yaw;
+
+               if((abs(Pitch - asin(-2 * q1 * q3 + 2 * q0* q2)* 57.3)<10e-3) // pitch
+               &&(abs(Roll - atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2* q2 + 1)* 57.3)<10e-3) // roll
+               &&(abs(Yaw - atan2(2*(q1*q2 + q0*q3),q0*q0+q1*q1-q2*q2-q3*q3) * 57.3)<10e-3))		//yaw
+               {
+                   update();
+                   emit updateModelView(array);
+                    //   mModelViewGadgetWidget->serialPortHandler(array);
+                   //   qDebug()<<"q1:"<<mAttitudeState.q1<<"q2:"<<mAttitudeState.q2<<"q3:"<<mAttitudeState.q3<<"q4:"<<mAttitudeState.q4<<endl;
+                   //    qDebug()<<"pitch:"<<mAttitudeState.Pitch<<"roll:"<<mAttitudeState.Roll<<"yaw:"<<mAttitudeState.Yaw<<endl;
+               }
+            break;
+
+        case GCSTELEMETRYSTATS_OBJID:
+                memcpy(&mGCSTelemetryStats,array,sizeof(GCSTelemetryStatsDataPacked));
+            //    qDebug()<<"TxDataRate:"<<mGCSTelemetryStats.TxDataRate<<endl;
+            break;
+
+        case SYSTEMSTATS_OBJID:
+            memcpy(&mSystemStats,array,sizeof(SystemStatsDataPacked));
+        //    qDebug()<<"FlightTime [s]:"<<mSystemStats.FlightTime/1000-1200<<"  CPULoad [%]:"<<mSystemStats.CPULoad<<endl;
+        break;
+    }
 }
 
 void EmbeddedSvgViewer::showVideoView(QString s)

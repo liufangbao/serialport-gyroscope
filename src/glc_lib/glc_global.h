@@ -30,7 +30,6 @@
 #include <QList>
 #include <QVector>
 #include <QHash>
-#include "glc_gl.h"
 #include "glc_config.h"
 
 // GLC_lib typedef

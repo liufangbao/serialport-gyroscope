@@ -1,7 +1,7 @@
 #include "serialportmanager.h"
 #include <QTimer>
 #include <QDebug>
-#include "uavobjhandle.h"
+#include "UAVObjGyroscopeHandler.h"
 SerialPortManager::SerialPortManager(QString *portName)
 {
      memcpy(&mPortName,portName,sizeof(portName));
@@ -187,7 +187,7 @@ rxbyte)
         }
         iproc->rxCount = 0;
 
-        UAVObjHandle obj(iproc->objId);
+        UAVObjGyroscopeHandler obj(iproc->objId);
 
         // Determine data length
         if (iproc->type == UAVTALK_TYPE_OBJ_REQ || iproc->type == UAVTALK_TYPE_ACK || iproc->type == UAVTALK_TYPE_NACK) {
@@ -329,6 +329,7 @@ void SerialPortManager::onReadyRead()
                  //       printf("file: %s  objid: %x\n",__FILE__,iproc->objId);
 #if 0
                         QString mReceivedString;
+                        UAVObjGyroscopeHandler temp_obj(iproc->objId);
                         for(int i = 0; i< mReceivedArray.count(); i++){
                             QString s;
                             s.sprintf("%02x ", (unsigned char)mReceivedArray.at(i));
@@ -337,18 +338,14 @@ void SerialPortManager::onReadyRead()
                         qDebug()<<
                                    "file:"<<__FILE__<<
                                    " packet_size:"<<iproc->packet_size<<
-                                   "objId:"<<hex<<iproc->objId<<endl<<
+                                   "objId:"<<hex<<iproc->objId<<"  name:"<<temp_obj.getPacketName()<<endl<<
                                    "data:"<<mReceivedString<<endl;
 #endif
-                        if(iproc->objId == ATTITUDESTATE_OBJID)
-                        {
-                            dataReady(mReceivedArray);
-                        }
+                            dataReady(iproc->objId ,mReceivedArray);
+
                         mReceivedArray.clear();
                     break;
                 }
             }
     }
 }
-
-
