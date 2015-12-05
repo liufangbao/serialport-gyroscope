@@ -21,11 +21,18 @@ SOURCES += main.cpp\
     embeddedsvgviewer.cpp \
     serialportmanager.cpp \
     modelviewgadgetwidget.cpp \
-    attitudelabel.cpp \
     videoclient.cpp \
-    gcstelemetrystatslabel.cpp \
-    UAVObjGyroscopeHandler.cpp \
-    monitorwidget.cpp
+    monitorwidget.cpp \
+#    uavtalk/telemetry.cpp \
+#    uavtalk/telemetrymanager.cpp \
+#    uavtalk/telemetrymonitor.cpp \
+#    uavtalk/uavtalk.cpp \
+#    uavtalk/uavobject.cpp \
+#    uavobjects/uavdataobject.cpp \
+#    uavobjects/uavmetaobject.cpp \
+#    uavobjects/uavobject.cpp \
+#    uavobjects/uavobjectfield.cpp \
+#    uavobjects/uavobjectmanager.cpp
 
 HEADERS  += mainwindow.h \
     qled.h \
@@ -34,12 +41,22 @@ HEADERS  += mainwindow.h \
     embeddedsvgviewer.h \
     serialportmanager.h \
     modelviewgadgetwidget.h \
-    attitudelabel.h \
     videoclient.h \
     config.h \
-    gcstelemetrystatslabel.h \
-    UAVObjGyroscopeHandler.h \
-    monitorwidget.h
+    monitorwidget.h \
+#    uavtalk/telemetry.h \
+#    uavtalk/telemetrymanager.h \
+#    uavtalk/telemetrymonitor.h \
+#    uavtalk/uavtalk.h \
+#    uavtalk/uavtalk_global.h \
+#    uavtalk/uavobject.h \
+#    uavobjects/uavdataobject.h \
+#    uavobjects/uavmetaobject.h \
+#    uavobjects/uavobject.h \
+#    uavobjects/uavobjectfield.h \
+#    uavobjects/uavobjectmanager.h \
+#    uavobjects/uavobjects_global.h \
+#    uavobjects/uavobjectsinit.h
 
 FORMS    += mainwindow.ui \
     setupdialog.ui \

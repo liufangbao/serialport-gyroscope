@@ -50,14 +50,11 @@
 #include <QSlider>
 #include <QPushButton>
 #include <QPainter>
-#include"UAVObjGyroscopeHandler.h"
 #include <QKeyEvent>
 #include<QLabel>
 #include "modelviewgadgetwidget.h"
-#include "attitudelabel.h"
 #include"videoclient.h"
 #include"config.h"
-#include"gcstelemetrystatslabel.h"
 #include"monitorwidget.h"
 class EmbeddedSvgViewer : public QWidget
 {
@@ -75,7 +72,7 @@ signals:
     void telemetryUpdated(double txRate, double rxRate);
 public slots:
     void setZoom(int); // 100 <= newZoom < 0
-    void serialPortHandler(uint32_t,QByteArray);
+    void attitudeHandler(float,float,float);
     void showVideoView(QString);
 private:
     QSvgRenderer* m_renderer;
@@ -91,21 +88,32 @@ private:
     QPointF m_viewBoxCenter;
     QPointF m_viewBoxCenterOnMousePress;
     QPoint m_mousePress;
-
+    typedef struct {
+        float Pitch;
+        float Roll;
+        float Yaw;
+    } AttitudeState;
+    AttitudeState mAttitudeState;
 
     QPoint mScreencenter;
      QPixmap AH,Dial,FixedHorizonTrans;
      qreal AH_X,AH_Y,FixedHorizonTrans_X,FixedHorizonTrans_Y,Dial_X,Dial_Y;
      QPainter AH_Painter,Dial_Painter,FixedHorizonTrans_Painter;
 
-     AccelStateData mAccelStateData;
-     AttitudeStateDataPacked mAttitudeState;
-     GCSTelemetryStatsDataPacked mGCSTelemetryStats;
-     FlightTelemetryStatsData mFlightTelemetryStatsData;
-     SystemStatsDataPacked mSystemStats;
-     StabilizationDesiredData mStabilizationDesiredData;
-
       QTimer *mTimer,*quitButtonTimer;
+      class AttitudeLabel : public QLabel
+      {
+      public:
+          AttitudeLabel();
+          AttitudeLabel(QString defaultText,
+                                       QWidget *parent,
+                                       QRect geometry,
+                                      QString styleSheet,
+                                       QPalette pe,
+                                       bool isAutoFillBackground,
+                                       QString moviePath,QSize movieSize,bool isStartMovie);
+
+      };
      AttitudeLabel *mPitchLabel,*mRollLabel,*mYawLabel;
      AttitudeLabel *mPitchLabelValue,*mRollLabelValue,*mYawLabelValue;
      QLabel *videoView;
@@ -113,8 +121,6 @@ private:
 #if USE_GLC_LIB
      ModelViewGadgetWidget *mModelViewGadgetWidget;
 #endif
-    GCSTelemetryStatsLabel *mTxGCSTelemetryStatsLabel,*mRxGCSTelemetryStatsLabel;
-
     MonitorWidget *mMonitorWidget;
 
     void updateImageScale();

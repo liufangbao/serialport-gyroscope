@@ -1,10 +1,15 @@
 #include "serialportmanager.h"
 #include <QTimer>
 #include <QDebug>
-#include "UAVObjGyroscopeHandler.h"
+#include<qmath.h>
+QextSerialPort *SerialPortManager::port() const
+{
+    return mPort;
+}
+
 SerialPortManager::SerialPortManager(QString *portName)
 {
-     memcpy(&mPortName,portName,sizeof(portName));
+    memcpy(&mPortName,portName,sizeof(portName));
 
      iproc = new UAVTalkInputProcessor();
      iproc->cs = 0x00;
@@ -85,7 +90,7 @@ uint8_t SerialPortManager::PIOS_CRC_updateByte(uint8_t crc, const uint8_t data)
  * \param[in] rxbyte Received byte
  * \return UAVTalkRxState
  */
-UAVTalkRxState SerialPortManager::UAVTalkProcessInputStreamQuiet(uint8_t
+SerialPortManager::UAVTalkRxState SerialPortManager::UAVTalkProcessInputStreamQuiet(uint8_t
 rxbyte)
 {
 
@@ -188,7 +193,7 @@ rxbyte)
         }
         iproc->rxCount = 0;
 
-        UAVObjGyroscopeHandler obj(iproc->objId);
+        UAVObjectHandler obj(iproc->objId);
 
         // Determine data length
         if (iproc->type == UAVTALK_TYPE_OBJ_REQ || iproc->type == UAVTALK_TYPE_ACK || iproc->type == UAVTALK_TYPE_NACK) {
@@ -301,7 +306,156 @@ rxbyte)
 
 /*
 get packet and send to EmbeddedSvgViewer
+ // grep "_OBJID" -R *.h|awk '{print "case "$2":"}'
 */
+void SerialPortManager::handlePacket(uint32_t objId,QByteArray array)
+{
+    switch(objId)
+    {
+    case ACCELGYROSETTINGS_OBJID:
+    case ACCELSENSOR_OBJID:
+    case ACCELSTATE_OBJID:
+        memcpy(&mAccelStateData,array,sizeof(AccelStateData));
+      //  qDebug()<<mAccelStateData.x<<mAccelStateData.y<<mAccelStateData.z<<endl;
+        break;
+    case ACCESSORYDESIRED_OBJID:
+    case ACTUATORCOMMAND_OBJID:
+    case ACTUATORDESIRED_OBJID:
+    case ACTUATORSETTINGS_OBJID:
+    case AIRSPEEDSENSOR_OBJID:
+    case AIRSPEEDSETTINGS_OBJID:
+    case AIRSPEEDSTATE_OBJID:
+    case ALTITUDEFILTERSETTINGS_OBJID:
+    case ALTITUDEHOLDSETTINGS_OBJID:
+    case ALTITUDEHOLDSTATUS_OBJID:
+    case ATTITUDESETTINGS_OBJID:
+    case ATTITUDESIMULATED_OBJID:
+        break;
+    case ATTITUDESTATE_OBJID:
+        memcpy(&mAttitudeState,array,sizeof(AttitudeStateDataPacked));
+
+        float q0,q1,q2,q3,Pitch,Roll,Yaw;
+        q0=mAttitudeState.q1;
+        q1=mAttitudeState.q2;
+        q2=mAttitudeState.q3;
+        q3=mAttitudeState.q4;
+        Pitch=mAttitudeState.Pitch;
+        Roll=mAttitudeState.Roll;
+        Yaw=mAttitudeState.Yaw;
+
+        if((abs(Pitch - asin(-2 * q1 * q3 + 2 * q0* q2)* 57.3)<10e-3) // pitch
+                &&(abs(Roll - atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2* q2 + 1)* 57.3)<10e-3) // roll
+                &&(abs(Yaw - atan2(2*(q1*q2 + q0*q3),q0*q0+q1*q1-q2*q2-q3*q3) * 57.3)<10e-3))		//yaw
+        {
+           // qDebug()<<"Attitude data OK!"<<endl;
+           emit attitudeReady(mAttitudeState.Pitch,mAttitudeState.Roll,mAttitudeState.Yaw);
+        }
+        break;
+    case AUXMAGSENSOR_OBJID:
+    case AUXMAGSETTINGS_OBJID:
+    case BAROSENSOR_OBJID:
+    case CALLBACKINFO_OBJID:
+    case CAMERADESIRED_OBJID:
+    case CAMERASTABSETTINGS_OBJID:
+    case DEBUGLOGCONTROL_OBJID:
+    case DEBUGLOGENTRY_OBJID:
+    case DEBUGLOGSETTINGS_OBJID:
+    case DEBUGLOGSTATUS_OBJID:
+    case EKFCONFIGURATION_OBJID:
+    case EKFSTATEVARIANCE_OBJID:
+    case FAULTSETTINGS_OBJID:
+    case FIRMWAREIAPOBJ_OBJID:
+    case FIXEDWINGPATHFOLLOWERSETTINGS_OBJID:
+    case FIXEDWINGPATHFOLLOWERSTATUS_OBJID:
+    case FLIGHTBATTERYSETTINGS_OBJID:
+    case FLIGHTBATTERYSTATE_OBJID:
+    case FLIGHTMODESETTINGS_OBJID:
+    case FLIGHTPLANCONTROL_OBJID:
+    case FLIGHTPLANSETTINGS_OBJID:
+    case FLIGHTPLANSTATUS_OBJID:
+    case FLIGHTSTATUS_OBJID:
+    case FLIGHTTELEMETRYSTATS_OBJID:
+         memcpy(&mFlightTelemetryStatsData,array,sizeof(FlightTelemetryStatsData));
+        break;
+    case GCSRECEIVER_OBJID:
+        break;
+    case GCSTELEMETRYSTATS_OBJID:
+        memcpy(&mGCSTelemetryStats,array,sizeof(GCSTelemetryStatsDataPacked));
+        //    qDebug()<<"TxDataRate:"<<mGCSTelemetryStats.TxDataRate<<endl;
+        break;
+    case GPSEXTENDEDSTATUS_OBJID:
+    case GPSPOSITIONSENSOR_OBJID:
+    case GPSSATELLITES_OBJID:
+    case GPSSETTINGS_OBJID:
+    case GPSTIME_OBJID:
+    case GPSVELOCITYSENSOR_OBJID:
+    case GROUNDTRUTH_OBJID:
+    case GYROSENSOR_OBJID:
+    case GYROSTATE_OBJID:
+    case HOMELOCATION_OBJID:
+    case HWSETTINGS_OBJID:
+    case I2CSTATS_OBJID:
+    case MAGSENSOR_OBJID:
+    case MAGSTATE_OBJID:
+    case MANUALCONTROLCOMMAND_OBJID:
+    case MANUALCONTROLSETTINGS_OBJID:
+    case MIXERSETTINGS_OBJID:
+    case MIXERSTATUS_OBJID:
+    case MPU6000SETTINGS_OBJID:
+    case NEDACCEL_OBJID:
+    case OBJECTPERSISTENCE_OBJID:
+    case OPLINKRECEIVER_OBJID:
+    case OPLINKSETTINGS_OBJID:
+    case OPLINKSTATUS_OBJID:
+    case OSDSETTINGS_OBJID:
+    case OVEROSYNCSETTINGS_OBJID:
+    case OVEROSYNCSTATS_OBJID:
+    case PATHACTION_OBJID:
+    case PATHDESIRED_OBJID:
+    case PATHPLAN_OBJID:
+    case PATHSTATUS_OBJID:
+    case PATHSUMMARY_OBJID:
+    case PERFCOUNTER_OBJID:
+    case POILEARNSETTINGS_OBJID:
+    case POILOCATION_OBJID:
+    case POSITIONSTATE_OBJID:
+    case RADIOCOMBRIDGESTATS_OBJID:
+    case RATEDESIRED_OBJID:
+    case RECEIVERACTIVITY_OBJID:
+    case REVOCALIBRATION_OBJID:
+    case REVOSETTINGS_OBJID:
+    case SONARALTITUDE_OBJID:
+    case STABILIZATIONBANK_OBJID:
+    case STABILIZATIONDESIRED_OBJID:
+    case STABILIZATIONSETTINGSBANK1_OBJID:
+    case STABILIZATIONSETTINGSBANK2_OBJID:
+    case STABILIZATIONSETTINGSBANK3_OBJID:
+    case STABILIZATIONSETTINGS_OBJID:
+    case STABILIZATIONSTATUS_OBJID:
+        memcpy(&mStabilizationDesiredData,array,sizeof(StabilizationDesiredData));
+        //    qDebug()<<mStabilizationDesiredData.Pitch<<mStabilizationDesiredData.Roll<<mStabilizationDesiredData.Yaw<<endl;
+        break;
+    case SYSTEMALARMS_OBJID:
+    case SYSTEMSETTINGS_OBJID:
+        break;
+    case SYSTEMSTATS_OBJID:
+        memcpy(&mSystemStats,array,sizeof(SystemStatsDataPacked));
+        //    qDebug()<<"FlightTime [s]:"<<mSystemStats.FlightTime/1000-1200<<"  CPULoad [%]:"<<mSystemStats.CPULoad<<endl;
+        break;
+    case TAKEOFFLOCATION_OBJID:
+    case TASKINFO_OBJID:
+    case TXPIDSETTINGS_OBJID:
+    case VELOCITYDESIRED_OBJID:
+    case VELOCITYSTATE_OBJID:
+    case VTOLPATHFOLLOWERSETTINGS_OBJID:
+    case VTOLSELFTUNINGSTATS_OBJID:
+    case WATCHDOGSTATUS_OBJID:
+    case WAYPOINTACTIVE_OBJID:
+    case WAYPOINT_OBJID:
+        break;
+    }
+}
+
 void SerialPortManager::onReadyRead()
 {
     if (mPort->bytesAvailable()) {
@@ -330,7 +484,7 @@ void SerialPortManager::onReadyRead()
                  //       printf("file: %s  objid: %x\n",__FILE__,iproc->objId);
 #if 0
                         QString mReceivedString;
-                        UAVObjGyroscopeHandler temp_obj(iproc->objId);
+                        UAVObjectHandler temp_obj(iproc->objId);
                         for(int i = 0; i< mReceivedArray.count(); i++){
                             QString s;
                             s.sprintf("%02x ", (unsigned char)mReceivedArray.at(i));
@@ -342,11 +496,76 @@ void SerialPortManager::onReadyRead()
                                    "objId:"<<hex<<iproc->objId<<"  name:"<<temp_obj.getPacketName()<<endl<<
                                    "data:"<<mReceivedString<<endl;
 #endif
-                            dataReady(iproc->objId ,mReceivedArray);
+                            handlePacket(iproc->objId ,mReceivedArray);
 
                         mReceivedArray.clear();
                     break;
                 }
             }
     }
+}
+
+SerialPortManager::UAVObjectHandler::UAVObjectHandler()
+{
+}
+
+SerialPortManager::UAVObjectHandler::UAVObjectHandler( uint32_t objId)
+{
+    switch(objId)
+    {
+    case ATTITUDESTATE_OBJID:
+        mPacketName = "ATTITUDESTATE_OBJID";
+        mObjId = objId;
+        mPacketLength = sizeof(AttitudeStateDataPacked);
+        break;
+    case GCSTELEMETRYSTATS_OBJID:
+        mPacketName = "GCSTELEMETRYSTATS_OBJID";
+        mObjId = objId;
+        mPacketLength = sizeof(GCSTelemetryStatsDataPacked);
+        break;
+    case FLIGHTTELEMETRYSTATS_OBJID:
+        mPacketName = "FLIGHTTELEMETRYSTATS_OBJID";
+        mObjId = objId;
+        mPacketLength = sizeof(FlightTelemetryStatsDataPacked);
+        break;
+    case SYSTEMSTATS_OBJID:
+        mPacketName = "SYSTEMSTATS_OBJID";
+        mObjId = objId;
+        mPacketLength = sizeof(SystemStatsDataPacked);
+        break;
+    case RATEDESIRED_OBJID:
+        mPacketName = "RATEDESIRED_OBJID";
+        mObjId = objId;
+        mPacketLength = sizeof(RateDesiredDataPacked);
+        break;
+    case ACCESSORYDESIRED_OBJID:
+        mPacketName = "ACCESSORYDESIRED_OBJID";
+        mObjId = objId;
+        mPacketLength = sizeof(AccessoryDesiredDataPacked);
+        break;
+    case STABILIZATIONSTATUS_OBJID:
+        mPacketName = "STABILIZATIONSTATUS_OBJID";
+        mObjId = objId;
+        mPacketLength = sizeof(StabilizationStatusDataPacked);
+        break;
+    default:
+        mObjId = 0;
+        mPacketLength = 0;
+        break;
+    }
+}
+
+QString SerialPortManager::UAVObjectHandler::getPacketName()
+{
+    return mPacketName;
+}
+
+uint32_t SerialPortManager::UAVObjectHandler::getPacketLength()
+{
+    return mPacketLength;
+}
+
+uint32_t SerialPortManager::UAVObjectHandler::getObjId()
+{
+    return mObjId;
 }

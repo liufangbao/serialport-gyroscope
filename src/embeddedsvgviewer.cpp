@@ -51,6 +51,7 @@
 #include <QDesktopWidget>
 #include <QPoint>
 #include <QDir>
+#include <QMovie>
 #include "monitorwidget.h"
 
 EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),Dial_Painter(this),FixedHorizonTrans_Painter(this)
@@ -182,14 +183,6 @@ EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),D
     connect(this,SIGNAL(telemetryConnected()),mMonitorWidget,SLOT(telemetryConnected()));
     connect(this,SIGNAL(telemetryDisconnected()),mMonitorWidget,SLOT(telemetryDisconnected()));
     connect(this,SIGNAL(telemetryUpdated(double,double)),mMonitorWidget,SLOT(telemetryUpdated(double,double)));
-
-    QRect TxStatsViewRect(screenrect.width()/2,screenrect.width()/2,
-                          screenrect.width()/4,screenrect.height()-screenrect.width()/2);
-    mTxGCSTelemetryStatsLabel = new GCSTelemetryStatsLabel(" Tx",this,TxStatsViewRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3);
-    QRect RxStatsViewRect(screenrect.width()-screenrect.width()/4,screenrect.width()/2,
-                          screenrect.width()/4,screenrect.height()-screenrect.width()/2);
-    mRxGCSTelemetryStatsLabel = new GCSTelemetryStatsLabel(" Rx",this,RxStatsViewRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3);
-
 }
 
 void EmbeddedSvgViewer::paintEvent(QPaintEvent *event)
@@ -369,163 +362,16 @@ void EmbeddedSvgViewer::setZoom(int newZoom)
 /*
 recognise packet and fetch data from it
 */
-void EmbeddedSvgViewer::serialPortHandler(uint32_t objId,QByteArray array)
+void EmbeddedSvgViewer::attitudeHandler(float pitch,float roll,float yaw)
 {
+    mAttitudeState.Pitch=pitch;
+    mAttitudeState.Roll=roll;
+    mAttitudeState.Yaw=yaw;
+
     emit telemetryConnected();
-    // grep "_OBJID" -R *.h|awk '{print "case "$2":"}'
-    switch(objId)
-    {
-    case ACCELGYROSETTINGS_OBJID:
-    case ACCELSENSOR_OBJID:
-    case ACCELSTATE_OBJID:
-        memcpy(&mAccelStateData,array,sizeof(AccelStateData));
-      //  qDebug()<<mAccelStateData.x<<mAccelStateData.y<<mAccelStateData.z<<endl;
-        break;
-    case ACCESSORYDESIRED_OBJID:
-    case ACTUATORCOMMAND_OBJID:
-    case ACTUATORDESIRED_OBJID:
-    case ACTUATORSETTINGS_OBJID:
-    case AIRSPEEDSENSOR_OBJID:
-    case AIRSPEEDSETTINGS_OBJID:
-    case AIRSPEEDSTATE_OBJID:
-    case ALTITUDEFILTERSETTINGS_OBJID:
-    case ALTITUDEHOLDSETTINGS_OBJID:
-    case ALTITUDEHOLDSTATUS_OBJID:
-    case ATTITUDESETTINGS_OBJID:
-    case ATTITUDESIMULATED_OBJID:
-        break;
-    case ATTITUDESTATE_OBJID:
-        memcpy(&mAttitudeState,array,sizeof(AttitudeStateDataPacked));
-        mPitchLabelValue->setText(QString("%1").arg(mAttitudeState.Pitch));
-        mRollLabelValue->setText(QString("%1").arg(mAttitudeState.Roll));
-        mYawLabelValue->setText(QString("%1").arg(mAttitudeState.Yaw));
-
-        float q0,q1,q2,q3,Pitch,Roll,Yaw;
-        q0=mAttitudeState.q1;
-        q1=mAttitudeState.q2;
-        q2=mAttitudeState.q3;
-        q3=mAttitudeState.q4;
-        Pitch=mAttitudeState.Pitch;
-        Roll=mAttitudeState.Roll;
-        Yaw=mAttitudeState.Yaw;
-
-        if((abs(Pitch - asin(-2 * q1 * q3 + 2 * q0* q2)* 57.3)<10e-3) // pitch
-                &&(abs(Roll - atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2* q2 + 1)* 57.3)<10e-3) // roll
-                &&(abs(Yaw - atan2(2*(q1*q2 + q0*q3),q0*q0+q1*q1-q2*q2-q3*q3) * 57.3)<10e-3))		//yaw
-        {
-            update();
-            emit updateModelView(array);
-            //   mModelViewGadgetWidget->serialPortHandler(array);
-            //   qDebug()<<"q1:"<<mAttitudeState.q1<<"q2:"<<mAttitudeState.q2<<"q3:"<<mAttitudeState.q3<<"q4:"<<mAttitudeState.q4<<endl;
-            //    qDebug()<<"pitch:"<<mAttitudeState.Pitch<<"roll:"<<mAttitudeState.Roll<<"yaw:"<<mAttitudeState.Yaw<<endl;
-        }
-        break;
-    case AUXMAGSENSOR_OBJID:
-    case AUXMAGSETTINGS_OBJID:
-    case BAROSENSOR_OBJID:
-    case CALLBACKINFO_OBJID:
-    case CAMERADESIRED_OBJID:
-    case CAMERASTABSETTINGS_OBJID:
-    case DEBUGLOGCONTROL_OBJID:
-    case DEBUGLOGENTRY_OBJID:
-    case DEBUGLOGSETTINGS_OBJID:
-    case DEBUGLOGSTATUS_OBJID:
-    case EKFCONFIGURATION_OBJID:
-    case EKFSTATEVARIANCE_OBJID:
-    case FAULTSETTINGS_OBJID:
-    case FIRMWAREIAPOBJ_OBJID:
-    case FIXEDWINGPATHFOLLOWERSETTINGS_OBJID:
-    case FIXEDWINGPATHFOLLOWERSTATUS_OBJID:
-    case FLIGHTBATTERYSETTINGS_OBJID:
-    case FLIGHTBATTERYSTATE_OBJID:
-    case FLIGHTMODESETTINGS_OBJID:
-    case FLIGHTPLANCONTROL_OBJID:
-    case FLIGHTPLANSETTINGS_OBJID:
-    case FLIGHTPLANSTATUS_OBJID:
-    case FLIGHTSTATUS_OBJID:
-    case FLIGHTTELEMETRYSTATS_OBJID:
-         memcpy(&mFlightTelemetryStatsData,array,sizeof(FlightTelemetryStatsData));
-         mTxGCSTelemetryStatsLabel->setText(" Tx bytes:"+ QString("%1").arg(mFlightTelemetryStatsData.TxBytes) );
-        mRxGCSTelemetryStatsLabel->setText(" Rx bytes:"+ QString("%1").arg(mFlightTelemetryStatsData.RxBytes) );
-        emit telemetryUpdated(mFlightTelemetryStatsData.TxDataRate,mFlightTelemetryStatsData.RxDataRate);
-        break;
-    case GCSRECEIVER_OBJID:
-        break;
-    case GCSTELEMETRYSTATS_OBJID:
-        memcpy(&mGCSTelemetryStats,array,sizeof(GCSTelemetryStatsDataPacked));
-        //    qDebug()<<"TxDataRate:"<<mGCSTelemetryStats.TxDataRate<<endl;
-        break;
-    case GPSEXTENDEDSTATUS_OBJID:
-    case GPSPOSITIONSENSOR_OBJID:
-    case GPSSATELLITES_OBJID:
-    case GPSSETTINGS_OBJID:
-    case GPSTIME_OBJID:
-    case GPSVELOCITYSENSOR_OBJID:
-    case GROUNDTRUTH_OBJID:
-    case GYROSENSOR_OBJID:
-    case GYROSTATE_OBJID:
-    case HOMELOCATION_OBJID:
-    case HWSETTINGS_OBJID:
-    case I2CSTATS_OBJID:
-    case MAGSENSOR_OBJID:
-    case MAGSTATE_OBJID:
-    case MANUALCONTROLCOMMAND_OBJID:
-    case MANUALCONTROLSETTINGS_OBJID:
-    case MIXERSETTINGS_OBJID:
-    case MIXERSTATUS_OBJID:
-    case MPU6000SETTINGS_OBJID:
-    case NEDACCEL_OBJID:
-    case OBJECTPERSISTENCE_OBJID:
-    case OPLINKRECEIVER_OBJID:
-    case OPLINKSETTINGS_OBJID:
-    case OPLINKSTATUS_OBJID:
-    case OSDSETTINGS_OBJID:
-    case OVEROSYNCSETTINGS_OBJID:
-    case OVEROSYNCSTATS_OBJID:
-    case PATHACTION_OBJID:
-    case PATHDESIRED_OBJID:
-    case PATHPLAN_OBJID:
-    case PATHSTATUS_OBJID:
-    case PATHSUMMARY_OBJID:
-    case PERFCOUNTER_OBJID:
-    case POILEARNSETTINGS_OBJID:
-    case POILOCATION_OBJID:
-    case POSITIONSTATE_OBJID:
-    case RADIOCOMBRIDGESTATS_OBJID:
-    case RATEDESIRED_OBJID:
-    case RECEIVERACTIVITY_OBJID:
-    case REVOCALIBRATION_OBJID:
-    case REVOSETTINGS_OBJID:
-    case SONARALTITUDE_OBJID:
-    case STABILIZATIONBANK_OBJID:
-    case STABILIZATIONDESIRED_OBJID:
-    case STABILIZATIONSETTINGSBANK1_OBJID:
-    case STABILIZATIONSETTINGSBANK2_OBJID:
-    case STABILIZATIONSETTINGSBANK3_OBJID:
-    case STABILIZATIONSETTINGS_OBJID:
-    case STABILIZATIONSTATUS_OBJID:
-        memcpy(&mStabilizationDesiredData,array,sizeof(StabilizationDesiredData));
-        //    qDebug()<<mStabilizationDesiredData.Pitch<<mStabilizationDesiredData.Roll<<mStabilizationDesiredData.Yaw<<endl;
-        break;
-    case SYSTEMALARMS_OBJID:
-    case SYSTEMSETTINGS_OBJID:
-        break;
-    case SYSTEMSTATS_OBJID:
-        memcpy(&mSystemStats,array,sizeof(SystemStatsDataPacked));
-        //    qDebug()<<"FlightTime [s]:"<<mSystemStats.FlightTime/1000-1200<<"  CPULoad [%]:"<<mSystemStats.CPULoad<<endl;
-        break;
-    case TAKEOFFLOCATION_OBJID:
-    case TASKINFO_OBJID:
-    case TXPIDSETTINGS_OBJID:
-    case VELOCITYDESIRED_OBJID:
-    case VELOCITYSTATE_OBJID:
-    case VTOLPATHFOLLOWERSETTINGS_OBJID:
-    case VTOLSELFTUNINGSTATS_OBJID:
-    case WATCHDOGSTATUS_OBJID:
-    case WAYPOINTACTIVE_OBJID:
-    case WAYPOINT_OBJID:
-        break;
-    }
+    update();
+   // emit updateModelView(array);
+    //   mModelViewGadgetWidget->serialPortHandler(array);
 }
 
 void EmbeddedSvgViewer::showVideoView(QString s)
@@ -533,3 +379,33 @@ void EmbeddedSvgViewer::showVideoView(QString s)
     videoView->setText(s);
 }
 
+EmbeddedSvgViewer::AttitudeLabel::AttitudeLabel()
+{
+
+}
+
+EmbeddedSvgViewer::AttitudeLabel::AttitudeLabel(QString defaultText,
+                             QWidget *parent,
+                             QRect geometry,
+                            QString styleSheet,
+                             QPalette pe,
+                             bool isAutoFillBackground,
+                             QString moviePath,QSize movieSize,bool isStartMovie)
+{
+    this->setParent(parent);
+    this->setText(defaultText);
+    setAutoFillBackground(isAutoFillBackground);
+    setGeometry(geometry);
+    setPalette(pe);
+   setStyleSheet(styleSheet);
+    if(NULL!=moviePath)
+    {
+        QMovie *mMovie=new QMovie(moviePath);
+        mMovie->setScaledSize(movieSize);
+        if(isStartMovie)
+        {
+            setMovie(mMovie);
+             mMovie->start();
+        }
+    }
+}

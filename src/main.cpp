@@ -6,7 +6,7 @@
 #include <QRect>
 #include "serialportmanager.h"
 #include "config.h"
-
+//#include "uavtalk/telemetrymanager.h"
 void printscreeninfo()
 {
     QDesktopWidget *dwsktopwidget = QApplication::desktop();
@@ -47,8 +47,12 @@ int main(int argc, char** argv)
     qDebug()<<"filePath:"<<filePath<<endl;
     SerialPortManager serialportManager(new QString("/dev/ttySAC2")); //for ok6410
    // SerialPortManager serialportManager(new QString("/dev/ttyUSB0")); //for PC-ubuntu
+
+    //TelemetryManager *mTelemetryManager = new TelemetryManager;
+    //mTelemetryManager->start(serialportManager.port());
+
     EmbeddedSvgViewer viewer(filePath);
-    viewer.connect(&serialportManager,SIGNAL(dataReady(uint32_t,QByteArray)),&viewer,SLOT(serialPortHandler(uint32_t,QByteArray)));
+    viewer.connect(&serialportManager,SIGNAL(attitudeReady(float,float,float)),&viewer,SLOT(attitudeHandler(float,float,float)));
     viewer.showFullScreen();
 #ifdef QT_KEYPAD_NAVIGATION
     QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
