@@ -4,10 +4,8 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-QT += svg
-QT           += network widget
-#QT += opengl
+QT       += core gui svg network
+QT       += widget
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = gyroscope
@@ -26,7 +24,8 @@ SOURCES += main.cpp\
     attitudelabel.cpp \
     videoclient.cpp \
     gcstelemetrystatslabel.cpp \
-    UAVObjGyroscopeHandler.cpp
+    UAVObjGyroscopeHandler.cpp \
+    monitorwidget.cpp
 
 HEADERS  += mainwindow.h \
     qled.h \
@@ -39,7 +38,8 @@ HEADERS  += mainwindow.h \
     videoclient.h \
     config.h \
     gcstelemetrystatslabel.h \
-    UAVObjGyroscopeHandler.h
+    UAVObjGyroscopeHandler.h \
+    monitorwidget.h
 
 FORMS    += mainwindow.ui \
     setupdialog.ui \
@@ -50,8 +50,3 @@ RESOURCES += \
     embeddedsvgviewer.qrc \
     ModelViewGadgetWidget.qrc
 
-
-#unix:!macx: LIBS += -L$$PWD/glc_lib/ -lGLC_lib
-
-#INCLUDEPATH += $$PWD/glc_lib
-#DEPENDPATH += $$PWD/glc_lib

@@ -6,7 +6,7 @@
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
-#include "../3rdparty/quazip/quazipfile.h"
+#include "../../../../../qt-5.5.1/glc_lib/3rdparty/quazip/quazipfile.h"
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'quazipfile.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 63

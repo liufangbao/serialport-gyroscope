@@ -36,14 +36,15 @@ int main(int argc, char** argv)
     pathname = dir.currentPath();
 
     if (argc == 1)
-      filePath = QLatin1String(":/Gyroscope/res/default.svg");
+      filePath = QLatin1String("/usr/local/arm/qt-4.8.5/gyroscope/src/res/default.svg");
     else if (argc == 2)
       filePath = argv[1];
     else {
         qDebug() << QLatin1String("Please specify an svg file!");
         return -1;
     }
-
+     filePath = QLatin1String("/usr/local/arm/qt-4.8.5/gyroscope/src/res/default.svg");
+    qDebug()<<"filePath:"<<filePath<<endl;
     SerialPortManager serialportManager(new QString("/dev/ttySAC2")); //for ok6410
    // SerialPortManager serialportManager(new QString("/dev/ttyUSB0")); //for PC-ubuntu
     EmbeddedSvgViewer viewer(filePath);

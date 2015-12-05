@@ -6,7 +6,7 @@
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
-#include "../viewport/glc_viewport.h"
+#include "../../../../../qt-5.5.1/glc_lib/viewport/glc_viewport.h"
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'glc_viewport.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 63

@@ -514,3 +514,8 @@ OTHER_FILES += \
     qtc_packaging/debian_harmattan/compat \
     qtc_packaging/debian_harmattan/changelog
 
+
+unix:!macx: LIBS += -L$$PWD/../../../../../../../../../../usr/local/arm/Mesa-10.4.0/lib/ -lglapi -lGLESv1_CM -lGLESv2
+
+INCLUDEPATH += $$PWD/../../../../../../../../../../usr/local/arm/Mesa-10.4.0/include
+DEPENDPATH += $$PWD/../../../../../../../../../../usr/local/arm/Mesa-10.4.0/include

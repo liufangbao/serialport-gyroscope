@@ -33,6 +33,7 @@ SerialPortManager::SerialPortManager(QString *portName)
 
      if (mPort->isOpen() && mPort->queryMode() == QextSerialPort::Polling)
          mTimer->start();
+
 }
 
 // CRC lookup table

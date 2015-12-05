@@ -40,7 +40,7 @@
 #include "./glc_lib/shading/glc_light.h"
 #include "./glc_lib/sceneGraph/glc_world.h"
 #include "./glc_lib/glc_exception.h"
-#include"uavobjhandle.h"
+#include"UAVObjGyroscopeHandler.h"
 class ModelViewGadgetWidget : public QGLWidget {
     Q_OBJECT
 

@@ -6,7 +6,7 @@
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
-#include "../glc_factory.h"
+#include "../../../../../qt-5.5.1/glc_lib/glc_factory.h"
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'glc_factory.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 63

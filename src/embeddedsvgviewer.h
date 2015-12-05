@@ -58,6 +58,7 @@
 #include"videoclient.h"
 #include"config.h"
 #include"gcstelemetrystatslabel.h"
+#include"monitorwidget.h"
 class EmbeddedSvgViewer : public QWidget
 {
     Q_OBJECT
@@ -69,6 +70,9 @@ public:
     void resizeEvent ( QResizeEvent * event );
 signals:
     void updateModelView(QByteArray);
+    void telemetryConnected();
+    void telemetryDisconnected();
+    void telemetryUpdated(double txRate, double rxRate);
 public slots:
     void setZoom(int); // 100 <= newZoom < 0
     void serialPortHandler(uint32_t,QByteArray);
@@ -94,9 +98,12 @@ private:
      qreal AH_X,AH_Y,FixedHorizonTrans_X,FixedHorizonTrans_Y,Dial_X,Dial_Y;
      QPainter AH_Painter,Dial_Painter,FixedHorizonTrans_Painter;
 
-      AttitudeStateDataPacked mAttitudeState;
-        GCSTelemetryStatsDataPacked mGCSTelemetryStats;
-        SystemStatsDataPacked mSystemStats;
+     AccelStateData mAccelStateData;
+     AttitudeStateDataPacked mAttitudeState;
+     GCSTelemetryStatsDataPacked mGCSTelemetryStats;
+     FlightTelemetryStatsData mFlightTelemetryStatsData;
+     SystemStatsDataPacked mSystemStats;
+     StabilizationDesiredData mStabilizationDesiredData;
 
       QTimer *mTimer,*quitButtonTimer;
      AttitudeLabel *mPitchLabel,*mRollLabel,*mYawLabel;
@@ -108,6 +115,7 @@ private:
 #endif
     GCSTelemetryStatsLabel *mTxGCSTelemetryStatsLabel,*mRxGCSTelemetryStatsLabel;
 
+    MonitorWidget *mMonitorWidget;
 
     void updateImageScale();
     QRectF getViewBox(QPointF viewBoxCenter);

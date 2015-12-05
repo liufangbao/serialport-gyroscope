@@ -51,6 +51,7 @@
 #include <QDesktopWidget>
 #include <QPoint>
 #include <QDir>
+#include "monitorwidget.h"
 
 EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),Dial_Painter(this),FixedHorizonTrans_Painter(this)
 {
@@ -64,6 +65,7 @@ EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),D
     QRect screenrect = dwsktopwidget->screenGeometry();   //screen size
     mScreencenter.setX(screenrect.width()/2);
     mScreencenter.setY(screenrect.height()/2);
+
 
     m_renderer = new QSvgRenderer(filePath);
     m_imageSize = m_renderer->viewBox().size();
@@ -165,21 +167,29 @@ EmbeddedSvgViewer::EmbeddedSvgViewer(const QString &filePath):AH_Painter(this),D
     connect(this, SIGNAL(updateModelView(QByteArray)), mModelViewGadgetWidget, SLOT(serialPortHandler(QByteArray)));
 #endif
 
-    QRect TxStatsViewRect(screenrect.width()/2,0,
-                          screenrect.width()/8,screenrect.width()/2);
-    mTxGCSTelemetryStatsLabel = new GCSTelemetryStatsLabel("Tx",this,TxStatsViewRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3);
-    QRect RxStatsViewRect(screenrect.width()-screenrect.width()/8,0,
-                          screenrect.width()/8,screenrect.width()/2);
-    mRxGCSTelemetryStatsLabel = new GCSTelemetryStatsLabel("Rx",this,RxStatsViewRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3);
-
-
-
     QRect VideoViewRect(screenrect.width()/2,0,
                         screenrect.width()/2,screenrect.width()/2);
     videoView =new QLabel;
     videoView->setGeometry(VideoViewRect);
     vc = new VideoClient;
     connect(vc,SIGNAL(videoReady(QString)),this,SLOT(showVideoView(QString)));
+
+    QRect MonitorWidgetRect(screenrect.width()/2,0,
+                          screenrect.width()/2,screenrect.height()-screenrect.width()/2);
+    mMonitorWidget = new MonitorWidget(this);
+    mMonitorWidget->setGeometry(MonitorWidgetRect);
+    mMonitorWidget->show();
+    connect(this,SIGNAL(telemetryConnected()),mMonitorWidget,SLOT(telemetryConnected()));
+    connect(this,SIGNAL(telemetryDisconnected()),mMonitorWidget,SLOT(telemetryDisconnected()));
+    connect(this,SIGNAL(telemetryUpdated(double,double)),mMonitorWidget,SLOT(telemetryUpdated(double,double)));
+
+    QRect TxStatsViewRect(screenrect.width()/2,screenrect.width()/2,
+                          screenrect.width()/4,screenrect.height()-screenrect.width()/2);
+    mTxGCSTelemetryStatsLabel = new GCSTelemetryStatsLabel(" Tx",this,TxStatsViewRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3);
+    QRect RxStatsViewRect(screenrect.width()-screenrect.width()/4,screenrect.width()/2,
+                          screenrect.width()/4,screenrect.height()-screenrect.width()/2);
+    mRxGCSTelemetryStatsLabel = new GCSTelemetryStatsLabel(" Rx",this,RxStatsViewRect,QString::fromUtf8("font: 8pt \"Sans Serif\";"),pe3);
+
 }
 
 void EmbeddedSvgViewer::paintEvent(QPaintEvent *event)
@@ -218,6 +228,8 @@ void EmbeddedSvgViewer::paintEvent(QPaintEvent *event)
 
     painter.rotate(yaw);
     painter.drawPixmap(-Dial.width()/2,-Dial.height()/2,Dial.width(),Dial.height(),Dial);
+
+    mMonitorWidget->update();
 }
 
 
@@ -359,12 +371,16 @@ recognise packet and fetch data from it
 */
 void EmbeddedSvgViewer::serialPortHandler(uint32_t objId,QByteArray array)
 {
+    emit telemetryConnected();
     // grep "_OBJID" -R *.h|awk '{print "case "$2":"}'
     switch(objId)
     {
     case ACCELGYROSETTINGS_OBJID:
     case ACCELSENSOR_OBJID:
     case ACCELSTATE_OBJID:
+        memcpy(&mAccelStateData,array,sizeof(AccelStateData));
+      //  qDebug()<<mAccelStateData.x<<mAccelStateData.y<<mAccelStateData.z<<endl;
+        break;
     case ACCESSORYDESIRED_OBJID:
     case ACTUATORCOMMAND_OBJID:
     case ACTUATORDESIRED_OBJID:
@@ -428,6 +444,11 @@ void EmbeddedSvgViewer::serialPortHandler(uint32_t objId,QByteArray array)
     case FLIGHTPLANSTATUS_OBJID:
     case FLIGHTSTATUS_OBJID:
     case FLIGHTTELEMETRYSTATS_OBJID:
+         memcpy(&mFlightTelemetryStatsData,array,sizeof(FlightTelemetryStatsData));
+         mTxGCSTelemetryStatsLabel->setText(" Tx bytes:"+ QString("%1").arg(mFlightTelemetryStatsData.TxBytes) );
+        mRxGCSTelemetryStatsLabel->setText(" Rx bytes:"+ QString("%1").arg(mFlightTelemetryStatsData.RxBytes) );
+        emit telemetryUpdated(mFlightTelemetryStatsData.TxDataRate,mFlightTelemetryStatsData.RxDataRate);
+        break;
     case GCSRECEIVER_OBJID:
         break;
     case GCSTELEMETRYSTATS_OBJID:
@@ -483,6 +504,9 @@ void EmbeddedSvgViewer::serialPortHandler(uint32_t objId,QByteArray array)
     case STABILIZATIONSETTINGSBANK3_OBJID:
     case STABILIZATIONSETTINGS_OBJID:
     case STABILIZATIONSTATUS_OBJID:
+        memcpy(&mStabilizationDesiredData,array,sizeof(StabilizationDesiredData));
+        //    qDebug()<<mStabilizationDesiredData.Pitch<<mStabilizationDesiredData.Roll<<mStabilizationDesiredData.Yaw<<endl;
+        break;
     case SYSTEMALARMS_OBJID:
     case SYSTEMSETTINGS_OBJID:
         break;

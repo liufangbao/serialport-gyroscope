@@ -10,4 +10,7 @@
         <file>res/default.svg</file>
         <file>res/v-slider-handle.svg</file>
     </qresource>
+    <qresource prefix="/">
+        <file>res/tx-rx.svg</file>
+    </qresource>
 </RCC>
